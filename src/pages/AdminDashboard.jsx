@@ -743,40 +743,172 @@ export default function AdminDashboard() {
       {/* Meetings list - full width below */}
       <div className="rounded-2xl bg-slate-900 border border-slate-800 p-6">
         <h2 className="text-lg font-semibold text-white mb-4">Meetings</h2>
-        <ul className="space-y-2 max-h-48 overflow-y-auto">
-          {meetings.map((m) => (
-            <li key={m.id} className="flex flex-wrap items-center gap-2 text-sm group">
-              <span className="text-slate-300">{m.title}</span>
-              <span className="text-slate-500">
-                {formatSlotLabel(m.startTime, m.endTime, displayTimezone)}
-              </span>
-              {m.meetLink && (
-                <a
-                  href={m.meetLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-blue-400 hover:underline"
-                >
-                  Join Meet
-                </a>
-              )}
-              {m.participants?.length > 0 && (
-                <span className="text-slate-500">
-                  ({m.participants.map((p) => p.email).join(", ")})
-                </span>
-              )}
-              <span className="flex-1" />
-              <button
-                type="button"
-                onClick={() => setMeetingToDelete(m.id)}
-                className="rounded border border-red-500/60 bg-red-500/10 text-red-400 hover:bg-red-500/20 text-xs font-medium px-2 py-1 transition"
-              >
-                Delete
-              </button>
-            </li>
-          ))}
-          {meetings.length === 0 && <p className="text-slate-500 text-sm">No meetings</p>}
-        </ul>
+        <div>
+          <div className="hidden md:grid grid-cols-5 gap-4 text-xs font-semibold text-slate-400 px-4 pt-1 pb-2 border-b border-slate-800">
+            <span>Date</span>
+            <span>Meeting Title</span>
+            <span>Attendees</span>
+            <span>Meet Link</span>
+            <span className="text-right">Delete</span>
+          </div>
+          <ul className="mt-2 space-y-3 max-h-80 overflow-y-auto">
+            {meetings.map((m) => (
+              <li key={m.id}>
+                <div className="grid grid-cols-1 md:grid-cols-5 gap-4 items-start rounded-xl bg-slate-900/70 border border-slate-800 px-4 py-3 shadow-sm hover:shadow-md hover:bg-slate-900 transition-transform hover:-translate-y-0.5">
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium text-white">
+                      {m.startTime
+                        ? new Date(m.startTime).toLocaleDateString(undefined, {
+                            day: "2-digit",
+                            month: "short",
+                            year: "numeric",
+                          })
+                        : "-"}
+                    </p>
+                    
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium text-white truncate">{m.title}</p>
+                    <p className="text-xs text-slate-400">
+                      {formatSlotLabel(m.startTime, m.endTime, displayTimezone)}
+                    </p>
+                  </div>
+                  <div className="text-xs text-slate-300">
+                    {m.participants?.length > 0 ? (
+                      <div className="space-y-0.5">
+                        {m.participants.map((p) => (
+                          <div key={p.email} className="truncate">
+                            {p.email}
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <span className="text-slate-500">No attendees listed</span>
+                    )}
+                  </div>
+                  <div className="text-xs text-slate-300 space-y-1">
+                    {m.meetLink ? (
+                      <>
+                        <p className="font-medium text-slate-100">
+                          {m.startTime &&
+                            new Date(m.startTime).toLocaleDateString("en-US", {
+                              weekday: "long",
+                              month: "long",
+                              day: "numeric",
+                              timeZone: displayTimezone,
+                            })}
+                          {m.startTime &&
+                            m.endTime &&
+                            ` · ${new Date(m.startTime).toLocaleTimeString("en-US", {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                              hour12: true,
+                              timeZone: displayTimezone,
+                            })} – ${new Date(m.endTime).toLocaleTimeString("en-US", {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                              hour12: true,
+                              timeZone: displayTimezone,
+                            })}`}
+                        </p>
+                        <p className="text-slate-400">
+                          Time zone: {displayTimezone === "IST" ? "Asia/Kolkata" : "UTC"}
+                        </p>
+                        <div className="pt-1 flex items-start justify-between gap-3">
+                          <div className="space-y-0.5">
+                            <p className="font-semibold text-slate-200">Google Meet joining info</p>
+                            <p className="text-slate-400">Video call link:</p>
+                            <a
+                              href={m.meetLink}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="break-all text-blue-400 hover:text-blue-300 hover:underline"
+                            >
+                              {m.meetLink}
+                            </a>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              const datePart = m.startTime
+                                ? new Date(m.startTime).toLocaleDateString("en-US", {
+                                    weekday: "long",
+                                    month: "long",
+                                    day: "numeric",
+                                    timeZone: displayTimezone,
+                                  })
+                                : "";
+                              const startPart = m.startTime
+                                ? new Date(m.startTime).toLocaleTimeString("en-US", {
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                    hour12: true,
+                                    timeZone: displayTimezone,
+                                  })
+                                : "";
+                              const endPart = m.endTime
+                                ? new Date(m.endTime).toLocaleTimeString("en-US", {
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                    hour12: true,
+                                    timeZone: displayTimezone,
+                                  })
+                                : "";
+                              const lineTwo =
+                                datePart && startPart && endPart
+                                  ? `${datePart} · ${startPart} – ${endPart}`
+                                  : "";
+                              const formattedText = `${m.title}\n${lineTwo}\nTime zone: ${displayTimezone}\nGoogle Meet joining info\nVideo call link: ${
+                                m.meetLink ?? "Link pending"
+                              }`;
+                              navigator.clipboard.writeText(formattedText);
+
+                              const button = e.currentTarget;
+                              const originalLabel = button.innerHTML;
+                              button.innerHTML = "✓ Copied";
+                              button.classList.add("text-emerald-400");
+                              setTimeout(() => {
+                                button.innerHTML = originalLabel;
+                                button.classList.remove("text-emerald-400");
+                              }, 1500);
+                            }}
+                            className="inline-flex items-center justify-center rounded-lg border border-slate-600 bg-slate-800 hover:bg-slate-700 hover:border-slate-500 text-slate-100 text-xs font-medium p-2 mt-0.5 transform active:scale-95 transition-all duration-200"
+                            aria-label="Copy meeting details"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              viewBox="0 0 20 20"
+                              fill="currentColor"
+                              className="w-3.5 h-3.5"
+                            >
+                              <path d="M6 2a2 2 0 0 1 2-2h7a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2v3a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h3V2Zm2 4h4a2 2 0 0 1 2 2v3h1V2H8v4Zm4 2H3v8h9V8Z" />
+                            </svg>
+                          </button>
+                        </div>
+                      </>
+                    ) : (
+                      <span className="text-xs text-slate-500">Link pending</span>
+                    )}
+                  </div>
+                  <div className="flex items-center md:justify-end">
+                    <button
+                      type="button"
+                      onClick={() => setMeetingToDelete(m.id)}
+                      className="inline-flex items-center justify-center rounded-lg border border-red-500/70 bg-red-500/10 text-red-400 hover:bg-red-500/20 text-xs font-medium px-3 py-1.5 transition"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              </li>
+            ))}
+            {meetings.length === 0 && (
+              <li>
+                <p className="text-slate-500 text-sm px-1 py-2">No meetings</p>
+              </li>
+            )}
+          </ul>
+        </div>
       </div>
 
       {/* Delete meeting confirmation modal */}
