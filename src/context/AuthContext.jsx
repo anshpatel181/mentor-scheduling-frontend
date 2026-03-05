@@ -33,8 +33,23 @@ export function AuthProvider({ children }) {
         localStorage.setItem("userEmail", u.email);
       }
     } catch {
-      localStorage.removeItem("token");
-      setUser(null);
+      // Only clear if this wasn't an SSO login
+      // For SSO users, keep the token and still set user from localStorage
+      const ssoToken = localStorage.getItem("token");
+      const ssoRole = localStorage.getItem("userRole");
+      const ssoUserId = localStorage.getItem("userId");
+      if (ssoToken && ssoRole && ssoUserId) {
+        // Keep SSO user logged in even if /me fails
+        setUser({
+          token: ssoToken,
+          role: ssoRole,
+          id: ssoUserId,
+          email: localStorage.getItem("userEmail") || "",
+        });
+      } else {
+        localStorage.removeItem("token");
+        setUser(null);
+      }
     } finally {
       setLoading(false);
     }
