@@ -153,10 +153,28 @@ export default function AvailabilityDashboard({ role = "USER" }) {
   const isSelectorSlotDisabled =
     selectorDate !== "" && isSlotDisabled(selectorDate, selectorHour);
 
-  const confirmSelectorSlot = () => {
+  const confirmSelectorSlot = async () => {
     if (!selectorDate || isSelectorSlotDisabled) return;
-    const key = `${selectorDate}-${selectorHour}`;
-    setToggles((prev) => ({ ...prev, [key]: true }));
+
+    const { startTime, endTime } = slotToUTC(selectorDate, selectorHour);
+
+    setSaving(true);
+    setError("");
+    try {
+      await availabilityApi.saveBatch([
+        {
+          date: selectorDate,
+          startTime,
+          endTime,
+          enabled: true,
+        },
+      ]);
+      await fetchWeekly();
+    } catch (e) {
+      setError(e.message || "Failed to save");
+    } finally {
+      setSaving(false);
+    }
   };
 
   const cancelChanges = () => {
@@ -233,10 +251,10 @@ export default function AvailabilityDashboard({ role = "USER" }) {
           <button
             type="button"
             onClick={confirmSelectorSlot}
-            disabled={!selectorDate || isSelectorSlotDisabled}
+            disabled={!selectorDate || isSelectorSlotDisabled || saving}
             className="rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-medium px-6 py-2.5 transition disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
           >
-            Confirm / Save
+            {saving ? "Saving..." : "Confirm / Save"}
           </button>
         </div>
       </section>
