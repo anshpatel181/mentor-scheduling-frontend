@@ -37,28 +37,30 @@ export default function AvailabilityDashboard({ role = "USER" }) {
   const [selectorHour, setSelectorHour] = useState(0);
 
   const fetchWeekly = useCallback(async () => {
-    if (!user) return; // wait for auth to be ready
+    if (!user) return;
     setLoading(true);
     setError("");
     try {
-      // Compute the anchor date for this view: today + weekOffset * 7 (UTC date)
       const today = new Date();
       const base = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()));
       base.setUTCDate(base.getUTCDate() + weekOffset * 7);
       const weekStartStr = getWeekStartStr(base);
-
       const res = await availabilityApi.getWeekly({ weekStart: weekStartStr });
       setData(res);
-      setToggles({});
+      // DO NOT call setToggles({}) here
     } catch (e) {
       setError(e.message || "Failed to load availability");
     } finally {
       setLoading(false);
     }
-  }, [weekOffset, user?.id]); // user added as dependency
+  }, [weekOffset, user?.id]);
 
   useEffect(() => {
-    if (user) fetchWeekly(); // only fetch when user is available
+    setToggles({});
+  }, [weekOffset]);
+
+  useEffect(() => {
+    if (user) fetchWeekly();
   }, [fetchWeekly]);
 
   const isSlotEnabled = (dateStr, hour) => {
