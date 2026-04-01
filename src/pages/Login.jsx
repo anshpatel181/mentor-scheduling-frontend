@@ -7,7 +7,6 @@ export default function Login({ setToken }) {
   const navigate = useNavigate();
 
   const API_URL = import.meta.env.VITE_API_URL;
-  console.log(API_URL);
   
   const handleLogin = async () => {
     const res = await fetch(`${API_URL}/api/auth/login`, {
